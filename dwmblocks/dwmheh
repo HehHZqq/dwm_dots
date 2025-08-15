@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Раскладка клавиатуры
+block_keyboard() {
+    layout=$(setxkbmap -query | grep layout | awk '{print $2}' | tr '[:lower:]' '[:upper:]')
+    echo "⌨ $layout"
+}
+
+# Громкость
+block_volume() {
+    vol=$(pactl get-sink-volume @DEFAULT_SINK@ 2>/dev/null | awk '{print $5}' | tr -d '%' || \
+          amixer get Master 2>/dev/null | awk -F'[][]' '/%/ {print $2}' | tr -d '%' | head -n1)
+    muted=$(pactl get-sink-mute @DEFAULT_SINK@ 2>/dev/null | grep -q yes && echo yes || \
+            amixer get Master 2>/dev/null | grep -q "\[off\]" && echo yes)
+    [ -z "$vol" ] && echo " --%" || { [ "$muted" = "yes" ] && echo "🔇 muted" || echo "🔊 ${vol}%"; }
+}
+
+# Заряд батареи
+block_battery() {
+    [ -f /sys/class/power_supply/BAT0/capacity ] && echo "🔋 $(cat /sys/class/power_supply/BAT0/capacity)% ($(cat /sys/class/power_supply/BAT0/status))" || echo ""
+}
+
+# Температура ЦП
+block_cputemp() {
+    temp=$(sensors -u 2>/dev/null | awk '/temp1_input/ {printf "%.0f", $2}' || \
+           cat /sys/class/thermal/thermal_zone0/temp 2>/dev/null | awk '{printf "%.0f", $1/1000}')
+    [ -n "$temp" ] && echo "🌡️ ${temp}°C" || echo "🌡️ N/A"
+}
+
+# Загрузка ЦП
+block_cpu() {
+    cpu=$(mpstat 1 1 2>/dev/null | awk '/Average/ {printf "%.0f%%", 100 - $12}' || \
+          top -bn1 | grep "Cpu(s)" | awk '{printf "%.0f%%", $2}')
+    echo "🖥️ $cpu"
+}
+
+# ОЗУ в ГБ
+block_memory() {
+    ram=$(free -m | awk '/Mem/ {printf "%.1f Gb", $3/1024}')
+    echo " $ram"
+}
+
+# Время
+block_time() {
+    time_only="$(date +"%H:%M%p" | sed 's/  / /g')"
+    echo "󰥔 $time_only"
+}
+
+# Обработка кликов
+case $BLOCK_BUTTON in
+    1) ;; # ЛКМ
+    3) ;; # ПКМ
+esac
+
+# Вывод блоков (справа налево)
+case $1 in
+    keyboard) block_keyboard ;;
+    volume) block_volume ;;
+    battery) block_battery ;;
+    cputemp) block_cputemp ;;
+    cpu) block_cpu ;;
+    memory) block_memory ;;
+    time) block_time ;;
+    *) echo "$(block_keyboard) $(block_volume) $(block_battery) $(block_cputemp) $(block_cpu) $(block_memory) $(block_time)" ;;
+esac

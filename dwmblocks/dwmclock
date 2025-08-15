@@ -1,0 +1,6 @@
+#!/bin/bash
+
+time_only="$(date +"%H:%M%p" | sed 's/  / /g')"
+icon="󰥔"
+
+printf " %s %s \\n" "$icon" "$time_only "

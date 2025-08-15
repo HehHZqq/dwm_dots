@@ -1,0 +1,7 @@
+#!/bin/bash
+
+ram=$(free -m | awk '/Mem/ {printf "%.1f Gb ", $3/1024}')
+echo " $ram  "
+
+
+

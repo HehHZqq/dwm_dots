@@ -1,0 +1,3 @@
+#!/bin/bash
+layout=$(setxkbmap -query | grep layout | awk '{print $2}' | tr '[:lower:]' '[:upper:]')
+[ -n "$layout" ] && echo "⌨ $layout" || echo "⌨ N/A"

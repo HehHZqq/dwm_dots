@@ -1,0 +1,14 @@
+#!/bin/sh
+
+BATTERY_PATH="/sys/class/power_supply/BAT0"
+
+if [ -d "$BATTERY_PATH" ]; then
+    capacity=$(cat "$BATTERY_PATH/capacity")
+    status=$(cat "$BATTERY_PATH/status")
+    
+     
+    echo " $capacity%   "
+
+else
+    echo "No BAT0"
+fi

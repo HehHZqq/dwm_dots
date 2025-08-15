@@ -1,0 +1,9 @@
+#!/bin/sh
+
+temp_file="/sys/class/thermal/thermal_zone0/temp"
+
+if [ -f "$temp_file" ]; then
+    temp=$(cat "$temp_file")
+    temp=$((temp / 1000))
+    echo " $temp°   "
+fi
